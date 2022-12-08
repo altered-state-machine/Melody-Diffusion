@@ -19,3 +19,4 @@ EDM_Mel_ds/
 _audiodiffusion/
 logs/
 wandb/
+*.ckpt
