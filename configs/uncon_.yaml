@@ -69,10 +69,11 @@ data:
       target: dmm.dataloader.uncon.Mel_UnconDataset
       params:
         root: ./data/EDM_Mel
-    # validation:
-    #   target: dmm.dataloader.uncon.Mel_UnconDataset
-    #   params:
-    #     root: ./data/EDM_Mel
+    validation:
+      target: dmm.dataloader.uncon.Mel_UnconDataset
+      params:
+        root: ./data/EDM_Mel
+        train: False
 
 
 lightning:
