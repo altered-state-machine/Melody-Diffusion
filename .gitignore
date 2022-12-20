@@ -1,7 +1,8 @@
 .vscode
 __pycache__
 .ipynb_checkpoints
-data
+data/EDM_Mel/
+data/EDM_Mel_ds/
 flagged
 build
 dist
