@@ -2,6 +2,9 @@ import csv
 from google.cloud import storage
 from pathlib import Path
 
+import os, sys
+print(os.path.abspath(__file__))
+
 root = '/Melody-Diffusion/data/splits/split-0/autotagging-train.tsv'
 prefix = 'gs://asm-ai-data/Michael/Database/MTG_Audio/'
 
