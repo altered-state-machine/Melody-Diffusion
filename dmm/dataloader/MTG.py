@@ -113,6 +113,15 @@ class AudioFolder(data.Dataset):
             raise ValueError("type not allowed")
         self.get_dictionary(fn)
 
+    def get_norm_mel(self, waveform, _, window_size):
+        begin_index = random.randint(0, len(waveform[0])-window_size)
+        waveform_slice = waveform[:,begin_index:begin_index+window_size]
+        mel = torch.pow(spectrogram_from_waveform(waveform_slice, _, n_fft=16384, hop_length=1024, win_length=4096, n_mels=512) , 0.25)
+        mel = (mel/mel.max()).flip(0)
+        if torch.isnan(mel).any():
+            mel = self.get_norm_mel(waveform, _, window_size)
+        return mel
+
     def __getitem__(self, index):
         index_list = list(self.dictionary.keys())
         index = index_list[index]
@@ -123,10 +132,13 @@ class AudioFolder(data.Dataset):
             if _ != 44100:
                 waveform = torchaudio.transforms.Resample(_ , 44100)(waveform)
             window_size = 512*512 # waveform slice size = 4096*512 n_fft*resolution
-            begin_index = random.randint(0, len(waveform[0])-window_size)
-            waveform_slice = waveform[:,begin_index:begin_index+window_size]
-            mel = torch.pow(spectrogram_from_waveform(waveform_slice,_, n_fft=16384, hop_length=1024, win_length=4096, n_mels=512) , 0.25)
-            mel = (mel/mel.max()).flip(0)
+
+            mel = self.get_norm_mel(waveform, _, window_size)
+            # begin_index = random.randint(0, len(waveform[0])-window_size)
+            # waveform_slice = waveform[:,begin_index:begin_index+window_size]
+            # mel = torch.pow(spectrogram_from_waveform(waveform_slice,_, n_fft=16384, hop_length=1024, win_length=4096, n_mels=512) , 0.25)
+            # mel = (mel/mel.max()).flip(0)
+
             # log_mel = self.power2db(mel)
             # log_mel = (log_mel - log_mel.min()) / (log_mel.max() - log_mel.min())
             # log_mel = 1 - log_mel
@@ -137,7 +149,7 @@ class AudioFolder(data.Dataset):
             mel = (mel-mel.min()) / (mel.max()-mel.min())
             mel = mel*2-1
         # tags = self.dictionary[index]['tags']
-        # assert torch.isnan(gray2rgb(mel[...,:512].unsqueeze(0))).any() == False, "Nan in Mel"
+        assert torch.isnan(gray2rgb(mel[...,:512].unsqueeze(0))).any() == False, "Nan in Mel"
         return_dict = {'jpg': gray2rgb(mel[...,:512].unsqueeze(0)), 'caption': self.dictionary[index]['prompt']}
         return return_dict
 
@@ -160,17 +172,22 @@ def get_audio_loader(root, subset, batch_size, tr_val='train', type='audio',spli
 if __name__ == '__main__':
     # a,b = tsv2dict('/home/hu/audio-diffusion/data/splits/split-0/autotagging-train.tsv')
     a = get_audio_loader('/home/hu/database/MTG_audio', 'autotagging', 1, 'train','audio', 0, 0)
-    sp = next(iter(a))
-    from torchvision.utils import save_image
-    # torchaudio.save('test_large.wav', torch.mean(sp[1],1), 44100)
-    save_image(sp['img'],'test_large.png') 
-    # image_from_spectrogram(sp[0][...,:512].cpu().numpy()).save('test_large.png')
-    # recover = torch.pow(sp[0][...,:512]*5,4)
-    # rec_wav = waveform_from_spectrogram(recover,n_fft=16384, hop_length=512, win_length=4096,sample_rate=44100,num_samples=0)
-    # torchaudio.save('rec_test_large.wav', torch.tensor(rec_wav), 44100)
-    from PIL import Image
-    img = Image.open('test_large.png')
-    sample, durations = wav_bytes_from_spectrogram_image(img)
-    sample = (sample - sample.min()) / (sample.max() - sample.min())
-    torchaudio.save('rec_test_large.wav', torch.tensor(sample).unsqueeze(0), 44100)
-    print('ok')
+
+    from tqdm import tqdm
+    for i in tqdm(a, total=len(a)):
+        i
+
+    # sp = next(iter(a))
+    # from torchvision.utils import save_image
+    # # torchaudio.save('test_large.wav', torch.mean(sp[1],1), 44100)
+    # save_image(sp['img'],'test_large.png') 
+    # # image_from_spectrogram(sp[0][...,:512].cpu().numpy()).save('test_large.png')
+    # # recover = torch.pow(sp[0][...,:512]*5,4)
+    # # rec_wav = waveform_from_spectrogram(recover,n_fft=16384, hop_length=512, win_length=4096,sample_rate=44100,num_samples=0)
+    # # torchaudio.save('rec_test_large.wav', torch.tensor(rec_wav), 44100)
+    # from PIL import Image
+    # img = Image.open('test_large.png')
+    # sample, durations = wav_bytes_from_spectrogram_image(img)
+    # sample = (sample - sample.min()) / (sample.max() - sample.min())
+    # torchaudio.save('rec_test_large.wav', torch.tensor(sample).unsqueeze(0), 44100)
+    # print('ok')
