@@ -5,7 +5,7 @@ from pathlib import Path
 import os, sys
 print(os.path.abspath(__file__))
 
-root = '/Melody-Diffusion/data/splits/split-0/autotagging-train.tsv'
+root = '/home/Melody-Diffusion/data/splits/split-0/autotagging-train.tsv'
 prefix = 'gs://asm-ai-data/Michael/Database/MTG_Audio/'
 
 
@@ -20,9 +20,10 @@ def get_files_path(root, prefix):
 
 
 if __name__ == "__main__":
+    from tqdm import tqdm
     files = get_files_path(root, prefix)
     client = storage.Client(project="ai-innovation-370705")
-    Path('/MTG_Audio').mkdir(parents=True, exist_ok=True)
-    for file in files:
-        with open(file.split('Database')[-1]) as file_obj:
+    Path('/home/MTG_Audio').mkdir(parents=True, exist_ok=True)
+    for file in tqdm(files):
+        with open(''.join(['/home',file.split('Database')[-1]])) as file_obj:
             client.download_blob_to_file(file, file_obj)
