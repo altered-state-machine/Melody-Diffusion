@@ -379,7 +379,7 @@ def waveform_from_spectrogram(
     n_mels: int = 512,
     max_mel_iters: int = 200,
     num_griffin_lim_iters: int = 32,
-    device: str = "cuda:0",
+    device: str = "cuda",
 ) -> np.ndarray:
     """
     Reconstruct a waveform from a spectrogram.

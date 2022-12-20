@@ -21,7 +21,7 @@ model:
       target: dmm.modules.diffusionmodules.openaimodel.UNetModel
       params:
         use_checkpoint: True
-        use_fp16: True
+        use_fp16: False
         image_size: 32 # unused
         in_channels: 4
         out_channels: 4
@@ -101,3 +101,5 @@ lightning:
   trainer:
     benchmark: True
     gpus: 1
+    # precision: 16
+    accelerator: "gpu"

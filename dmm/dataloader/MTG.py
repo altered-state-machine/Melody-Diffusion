@@ -137,7 +137,8 @@ class AudioFolder(data.Dataset):
             mel = (mel-mel.min()) / (mel.max()-mel.min())
             mel = mel*2-1
         # tags = self.dictionary[index]['tags']
-        return_dict = {'jpg': gray2rgb(mel[...,:512].unsqueeze(0)), 'txt': self.dictionary[index]['prompt']}
+        # assert torch.isnan(gray2rgb(mel[...,:512].unsqueeze(0))).any() == False, "Nan in Mel"
+        return_dict = {'jpg': gray2rgb(mel[...,:512].unsqueeze(0)), 'caption': self.dictionary[index]['prompt']}
         return return_dict
 
     def get_dictionary(self, fn):

@@ -20,3 +20,4 @@ _audiodiffusion/
 logs/
 wandb/
 *.ckpt
+*.wav
