@@ -1,5 +1,5 @@
 model:
-  base_learning_rate: 1.0e-04
+  base_learning_rate: 5.0e-05
   target: dmm.models.diffusion.ddpm.LatentDiffusion
   params:
     linear_start: 0.00085
@@ -73,8 +73,8 @@ model:
 data:
   target: solver.pl_solver.DataModuleFromConfig
   params:
-    batch_size: 8
-    num_workers: 2
+    batch_size: 10
+    num_workers: 12
     wrap: false
     train:
       target: dmm.dataloader.MTG.AudioFolder

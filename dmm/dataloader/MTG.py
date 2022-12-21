@@ -135,8 +135,10 @@ class AudioFolder(data.Dataset):
             if _ != 44100:
                 waveform = torchaudio.transforms.Resample(_ , 44100)(waveform)
             window_size = 1024*512 # waveform slice size = 4096*512 n_fft*resolution
-
+            assert len(waveform.shape) == 2
+            assert (len(waveform[0]) >= window_size), "waveform length is too short, file_id:{}".format(self.dictionary[index]['path'])
             mel, waveform_slice = self.get_norm_mel(waveform, _, window_size)
+
             # begin_index = random.randint(0, len(waveform[0])-window_size)
             # waveform_slice = waveform[:,begin_index:begin_index+window_size]
             # mel = torch.pow(spectrogram_from_waveform(waveform_slice,_, n_fft=16384, hop_length=1024, win_length=4096, n_mels=512) , 0.25)
@@ -152,11 +154,13 @@ class AudioFolder(data.Dataset):
             mel = (mel-mel.min()) / (mel.max()-mel.min())
             mel = mel*2-1
         # tags = self.dictionary[index]['tags']
-        assert gray2rgb(mel[...,:512].unsqueeze(0)).size() == (3,512,512), "mel shape wrong"
-        assert torch.isnan(gray2rgb(mel[...,:512].unsqueeze(0))).any() == False, "Nan in Mel"
+        # assert gray2rgb(mel[...,:512].unsqueeze(0)).size() == (3,512,512), "mel shape wrong"
+        # assert torch.isnan(gray2rgb(mel[...,:512].unsqueeze(0))).any() == False, "Nan in Mel"
+
+        # return_dict = {'jpg':torch.randn(3,256,256)}
         return_dict = {'jpg': gray2rgb(mel[...,:512].unsqueeze(0)), 
         'caption': self.dictionary[index]['prompt']}
-        # 'audio': waveform_slice}
+        # # 'audio': waveform_slice}
         return return_dict
 
     def get_dictionary(self, fn):
@@ -176,7 +180,7 @@ def get_audio_loader(root, subset, batch_size, tr_val='train', type='audio',spli
 
 if __name__ == '__main__':
     # a,b = tsv2dict('/home/hu/audio-diffusion/data/splits/split-0/autotagging-train.tsv')
-    a = get_audio_loader('/home/hu/database/MTG_audio', 'autotagging', 10, 'train','audio', 0, 8)
+    a = get_audio_loader('/home/hu/database/MTG_audio', 'autotagging', 10, 'train','audio', 0, 10)
 
     from tqdm import tqdm
     for i in tqdm(a, total=len(a)):
