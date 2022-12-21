@@ -16,6 +16,8 @@ CATEGORIES = ['genre', 'instrument', 'mood/theme']
 TAG_HYPHEN = '---'
 METADATA_DESCRIPTION = 'TSV file with such columns: TRACK_ID, ARTIST_ID, ALBUM_ID, PATH, DURATION, TAGS'
 DESCRIPTION = ['track', 'song', 'music', 'clip', 'melody']
+PROMPT_SINGER = ['The singer is ', 'The artist is ', 'The performer is ', 'The musician is ', 'The song is created by ', 'This song is sung by ']
+PROMPT_TITLE = ['Creator', 'Artist', 'Performer', 'Musician']
 
 def get_id(value):
     return int(value.split('_')[1])
@@ -63,7 +65,7 @@ def tsv2dict(fn):
                 'path': row[3],
                 'duration': float(row[4]),
                 'tags': [i.split(TAG_HYPHEN) for i in row[5:]],  # raw tags, not sure if will be used
-                'prompt': tag2prompt(row[5:])
+                'prompt': tag2prompt(row[5:])+'{}{}{}. '.format(random.choice(PROMPT_SINGER), random.choice(PROMPT_TITLE),str(get_id(row[1])))
             }
             # tracks[track_id].update({category: set() for category in CATEGORIES})
 

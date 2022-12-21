@@ -162,6 +162,13 @@ class AudioFolder(data.Dataset):
     def __len__(self):
         return len(self.dictionary)
 
+def get_audio_loader(root, subset, batch_size, tr_val='train', type='audio',split=0, num_workers=0):
+    data_loader = data.DataLoader(dataset=AudioFolder(root, subset, tr_val, type,split),
+                                  batch_size=batch_size,
+                                  shuffle=True,
+                                  num_workers=num_workers)
+    return data_loader
+
 
 if __name__ == '__main__':
     # a,b = tsv2dict('/home/hu/audio-diffusion/data/splits/split-0/autotagging-train.tsv')
