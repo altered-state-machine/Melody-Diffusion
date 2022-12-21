@@ -21,7 +21,7 @@ from pytorch_lightning.utilities.distributed import rank_zero_only
 from dmm.util import log_txt_as_img, exists, default, ismap, isimage, mean_flat, count_params, instantiate_from_config
 from dmm.modules.ema import LitEma
 from dmm.modules.distributions.distributions import normal_kl, DiagonalGaussianDistribution
-from dmm.models.autoencoder import IdentityFirstStage, AutoencoderKL
+from dmm.models.autoencoder import VQModelInterface, IdentityFirstStage, AutoencoderKL
 from dmm.modules.diffusionmodules.util import make_beta_schedule, extract_into_tensor, noise_like
 from dmm.models.diffusion.ddim import DDIMSampler
 
@@ -1248,8 +1248,8 @@ class LatentDiffusion(DDPM):
 
 
     @torch.no_grad()
-    def log_images(self, batch, N=8, n_row=4, sample=True, ddim_steps=200, ddim_eta=1., return_keys=None,
-                   quantize_denoised=True, inpaint=True, plot_denoise_rows=False, plot_progressive_rows=True,
+    def log_images(self, batch, N=8, n_row=4, sample=True, ddim_steps=100, ddim_eta=1., return_keys=None,
+                   quantize_denoised=True, inpaint=False, plot_denoise_rows=False, plot_progressive_rows=False,
                    plot_diffusion_rows=True, **kwargs):
 
         use_ddim = ddim_steps is not None

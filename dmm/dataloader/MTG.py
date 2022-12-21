@@ -9,8 +9,7 @@ from collections import defaultdict
 from torch.utils import data
 import torchaudio
 from torchaudio import transforms
-
-from dmm.util import waveform_from_spectrogram, spectrogram_from_waveform, image_from_spectrogram, wav_bytes_from_spectrogram_image
+from dmm.util import waveform_from_spectrogram, spectrogram_from_waveform, image_from_spectrogram, wav_bytes_from_spectrogram_image, waveform_from_tensor
 
 
 CATEGORIES = ['genre', 'instrument', 'mood/theme']
@@ -118,9 +117,10 @@ class AudioFolder(data.Dataset):
         waveform_slice = waveform[:,begin_index:begin_index+window_size]
         mel = torch.pow(spectrogram_from_waveform(waveform_slice, _, n_fft=16384, hop_length=1024, win_length=4096, n_mels=512) , 0.25)
         mel = (mel/mel.max()).flip(0)
+        mel = mel*2.0-1.0
         if torch.isnan(mel).any():
-            mel = self.get_norm_mel(waveform, _, window_size)
-        return mel
+            mel, waveform_slice = self.get_norm_mel(waveform, _, window_size)
+        return mel, waveform_slice
 
     def __getitem__(self, index):
         index_list = list(self.dictionary.keys())
@@ -131,9 +131,9 @@ class AudioFolder(data.Dataset):
             waveform, _ = raw_data[0], raw_data[1]
             if _ != 44100:
                 waveform = torchaudio.transforms.Resample(_ , 44100)(waveform)
-            window_size = 512*512 # waveform slice size = 4096*512 n_fft*resolution
+            window_size = 1024*512 # waveform slice size = 4096*512 n_fft*resolution
 
-            mel = self.get_norm_mel(waveform, _, window_size)
+            mel, waveform_slice = self.get_norm_mel(waveform, _, window_size)
             # begin_index = random.randint(0, len(waveform[0])-window_size)
             # waveform_slice = waveform[:,begin_index:begin_index+window_size]
             # mel = torch.pow(spectrogram_from_waveform(waveform_slice,_, n_fft=16384, hop_length=1024, win_length=4096, n_mels=512) , 0.25)
@@ -150,7 +150,9 @@ class AudioFolder(data.Dataset):
             mel = mel*2-1
         # tags = self.dictionary[index]['tags']
         assert torch.isnan(gray2rgb(mel[...,:512].unsqueeze(0))).any() == False, "Nan in Mel"
-        return_dict = {'jpg': gray2rgb(mel[...,:512].unsqueeze(0)), 'caption': self.dictionary[index]['prompt']}
+        return_dict = {'jpg': gray2rgb(mel[...,:512].unsqueeze(0)), 
+        'caption': self.dictionary[index]['prompt'],
+        'audio': waveform_slice}
         return return_dict
 
     def get_dictionary(self, fn):
@@ -159,14 +161,6 @@ class AudioFolder(data.Dataset):
 
     def __len__(self):
         return len(self.dictionary)
-
-
-def get_audio_loader(root, subset, batch_size, tr_val='train', type='audio',split=0, num_workers=0):
-    data_loader = data.DataLoader(dataset=AudioFolder(root, subset, tr_val, type,split),
-                                  batch_size=batch_size,
-                                  shuffle=True,
-                                  num_workers=num_workers)
-    return data_loader
 
 
 if __name__ == '__main__':

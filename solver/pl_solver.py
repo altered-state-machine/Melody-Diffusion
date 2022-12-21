@@ -20,7 +20,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint, Callback, LearningRateM
 from pytorch_lightning.utilities import rank_zero_info, rank_zero_only
 
 from dmm.dataloader.base import Txt2ImgIterableBaseDataset
-from dmm.util import instantiate_from_config, image_to_audio
+from dmm.util import instantiate_from_config, waveform_from_tensor
 
 
 def get_parser(**parser_kwargs):
@@ -315,16 +315,27 @@ class ImageLogger(Callback):
             # grid = (grid + 1.0) / 2.0  # -1,1 -> 0,1; c,h,w
             grid = images[k]
             grid = (grid + 1.0) / 2.0 
-            columns = ["Mel-Spectrogram", "Audio"]
-            imgs = [wandb.Image(_) for _ in grid]
-            # auds = [wandb.Audio(image_to_audio(_.cpu().numpy()), sample_rate=22050) for _ in grid]
-            auds = [wandb.Image(_) for _ in grid]
+            if k in ['inputs', 'reconstruction', 'samples']:
+                columns = ["Mel-Spectrogram", "Audio"]
+                imgs = [wandb.Image(_) for _ in grid]
+                # auds = [wandb.Audio(image_to_audio(_.cpu().numpy()), sample_rate=220 ) for _ in grid]
 
-            data = list(zip(imgs, auds))
+                auds = [wandb.Audio(waveform_from_tensor(_), sample_rate=44100) for _ in grid]
 
-            tag = f"{split}/{k}"
-            pl_module.logger.log_table(
-                tag, columns, data)
+                data = list(zip(imgs, auds))
+
+                tag = f"{split}/{k}"
+                pl_module.logger.log_table(
+                    tag, columns, data, step=pl_module.global_step)
+            else:
+                grid = torchvision.utils.make_grid(grid)
+                grid = (grid + 1.0) / 2.0  # -1,1 -> 0,1; c,h,w
+
+                tag = f"{split}/{k}"
+                pl_module.logger.log_image(
+                    key=tag, images=[grid],
+                    step=pl_module.global_step)
+
 
     @rank_zero_only
     def log_local(self, save_dir, split, images,

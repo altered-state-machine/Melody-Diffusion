@@ -275,6 +275,28 @@ def wav_bytes_from_spectrogram_image(image: Image.Image):
 
     return samples, duration_s
 
+def waveform_from_tensor(tensor):
+    max_volume = 50
+    power_for_image = 0.25
+    assert len(tensor.shape) == 3 
+    data = torch.mean(tensor,dim=0).flip(0) * max_volume  
+    data = torch.pow(data, 1 / power_for_image)
+
+
+    samples = waveform_from_spectrogram(
+        Sxx=data,
+        n_fft=16384,
+        hop_length=1024,
+        win_length=4096,
+        num_samples=0,
+        sample_rate=44100,
+        mel_scale=True,
+        n_mels=512,
+        max_mel_iters=200,
+        num_griffin_lim_iters=32,
+    )
+    samples = (samples - samples.min()) / (samples.max() - samples.min())
+    return samples
 
 def spectrogram_from_image(
     image: Image.Image, max_volume: float = 50, power_for_image: float = 0.25
@@ -348,7 +370,8 @@ def spectrogram_from_waveform(
         hop_length=hop_length,
         win_length=win_length,
     )
-
+    if waveform.size(0) == 2:
+        waveform = torch.mean(waveform, dim=0, keepdim=True)
     waveform_tensor = waveform.reshape(1, -1)
     Sxx_complex = spectrogram_func(waveform_tensor)[0]
 
@@ -400,7 +423,7 @@ def waveform_from_spectrogram(
             max_iter=max_mel_iters,
         ).to(device)
 
-        Sxx_torch = mel_inv_scaler(Sxx_torch)
+        Sxx_torch = mel_inv_scaler(Sxx_torch.float())
 
     griffin_lim = torchaudio.transforms.GriffinLim(
         n_fft=n_fft,
