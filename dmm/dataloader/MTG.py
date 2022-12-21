@@ -9,7 +9,7 @@ from collections import defaultdict
 from torch.utils import data
 import torchaudio
 from torchaudio import transforms
-from dmm.util import waveform_from_spectrogram, spectrogram_from_waveform, image_from_spectrogram, wav_bytes_from_spectrogram_image, waveform_from_tensor
+from util import waveform_from_spectrogram, spectrogram_from_waveform, image_from_spectrogram, wav_bytes_from_spectrogram_image, waveform_from_tensor
 
 
 CATEGORIES = ['genre', 'instrument', 'mood/theme']
@@ -152,10 +152,11 @@ class AudioFolder(data.Dataset):
             mel = (mel-mel.min()) / (mel.max()-mel.min())
             mel = mel*2-1
         # tags = self.dictionary[index]['tags']
+        assert gray2rgb(mel[...,:512].unsqueeze(0)).size() == (3,512,512), "mel shape wrong"
         assert torch.isnan(gray2rgb(mel[...,:512].unsqueeze(0))).any() == False, "Nan in Mel"
         return_dict = {'jpg': gray2rgb(mel[...,:512].unsqueeze(0)), 
-        'caption': self.dictionary[index]['prompt'],
-        'audio': waveform_slice}
+        'caption': self.dictionary[index]['prompt']}
+        # 'audio': waveform_slice}
         return return_dict
 
     def get_dictionary(self, fn):
@@ -175,11 +176,11 @@ def get_audio_loader(root, subset, batch_size, tr_val='train', type='audio',spli
 
 if __name__ == '__main__':
     # a,b = tsv2dict('/home/hu/audio-diffusion/data/splits/split-0/autotagging-train.tsv')
-    a = get_audio_loader('/home/hu/database/MTG_audio', 'autotagging', 1, 'train','audio', 0, 0)
+    a = get_audio_loader('/home/hu/database/MTG_audio', 'autotagging', 10, 'train','audio', 0, 8)
 
     from tqdm import tqdm
     for i in tqdm(a, total=len(a)):
-        i
+        i['jpg'].shape
 
     # sp = next(iter(a))
     # from torchvision.utils import save_image

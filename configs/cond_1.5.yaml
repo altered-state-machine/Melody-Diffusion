@@ -98,7 +98,7 @@ lightning:
     image_logger:
       target: solver.pl_solver.ImageLogger
       params:
-        batch_frequency: 5000
+        batch_frequency: 2500
         max_images: 8
         increase_log_steps: False
 
