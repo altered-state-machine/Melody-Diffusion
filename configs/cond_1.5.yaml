@@ -73,7 +73,7 @@ model:
 data:
   target: solver.pl_solver.DataModuleFromConfig
   params:
-    batch_size: 1
+    batch_size: 4
     # num_workers: 1
     wrap: false
     train:
@@ -98,12 +98,12 @@ lightning:
     image_logger:
       target: solver.pl_solver.ImageLogger
       params:
-        batch_frequency: 10
+        batch_frequency: 5000
         max_images: 8
         increase_log_steps: False
 
   trainer:
     benchmark: True
-    gpus: 1
+    gpus: 4
     # precision: 16
     accelerator: "gpu"
