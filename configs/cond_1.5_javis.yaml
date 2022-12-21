@@ -73,13 +73,13 @@ model:
 data:
   target: solver.pl_solver.DataModuleFromConfig
   params:
-    batch_size: 4
-    # num_workers: 1
+    batch_size: 6
+    num_workers: 8
     wrap: false
     train:
       target: dmm.dataloader.MTG.AudioFolder
       params:
-        root: /home/MTG_audio
+        root: /home/MTG_Audio
         subset: 'autotagging'
         tr_val: 'train'
         type: 'audio'
@@ -87,7 +87,7 @@ data:
     test:
       target: dmm.dataloader.MTG.AudioFolder
       params:
-        root: /home/MTG_audio
+        root: /home/MTG_Audio
         subset: 'autotagging'
         tr_val: 'validation'
         type: 'audio'
