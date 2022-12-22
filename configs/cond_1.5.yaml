@@ -84,7 +84,7 @@ data:
         tr_val: 'train'
         type: 'audio'
         split: 0
-    test:
+    validation:
       target: dmm.dataloader.MTG.AudioFolder
       params:
         root: /home/hu/database/MTG_audio

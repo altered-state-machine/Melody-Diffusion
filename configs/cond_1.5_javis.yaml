@@ -73,7 +73,7 @@ model:
 data:
   target: solver.pl_solver.DataModuleFromConfig
   params:
-    batch_size: 10
+    batch_size: 8
     num_workers: 12
     wrap: false
     train:
@@ -84,7 +84,7 @@ data:
         tr_val: 'train'
         type: 'audio'
         split: 0
-    test:
+    validation:
       target: dmm.dataloader.MTG.AudioFolder
       params:
         root: /home/MTG_Audio
