@@ -1,6 +1,9 @@
 import importlib
 # import librosa
 
+from scipy.io import wavfile
+import io
+
 import torch
 import numpy as np
 from collections import abc
@@ -267,13 +270,13 @@ def wav_bytes_from_spectrogram_image(image: Image.Image):
         num_griffin_lim_iters=32,
     )
 
-    # wav_bytes = io.BytesIO()
-    # wavfile.write(wav_bytes, sample_rate, samples.astype(np.int16))
-    # wav_bytes.seek(0)
+    wav_bytes = io.BytesIO()
+    wavfile.write(wav_bytes, sample_rate, samples.astype(np.int16))
+    wav_bytes.seek(0)
 
     duration_s = float(len(samples)) / sample_rate
 
-    return samples, duration_s
+    return wav_bytes, duration_s
 
 def waveform_from_tensor(tensor):
     max_volume = 50
